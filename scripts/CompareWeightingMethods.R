@@ -1,4 +1,4 @@
-# Balaning weights Methods Review
+# Balancing Weights Methods Review
 
 #Libraries
 library(foreign)
@@ -6,12 +6,6 @@ library(balancer)
 library(dplyr)
 library(ggplot2)
 library(sandwich)
-library(splines)
-library(haven)
-#library(Hmisc) #remove this library part of the way through
-library(tableone)
-library(survey)
-library(tibble)
 
 #1. Load and Prepare Data
 #1a. label the needed variables 
@@ -56,6 +50,17 @@ source("/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/functions/ess-fun
 SMR.ess <- ess(data, "pain", "SMR")
 IPW.ess <- ess(data, "pain", "IPW")
 
+#2e. PS overlap plot
+ps.overlap.data <-data %>%
+  select(pain, PS)
+ggplot(ps.overlap.data, aes(x=PS, fill = factor(pain)))+
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("blue", "red"), name = "Treatment") +
+  labs(x = "Propensity Score", y = "Density") +
+  ggtitle("Distribution of Propensity Score by Treatment") +
+  theme_minimal()
+
+
 #3. Estimate Balancing Weights
 #3a. Prepare data for BalanceR
 covs <- c("age", "sex", "admType", 
@@ -91,7 +96,7 @@ sd(data$ATTwts)
 
 # Balance Weights ATE
 # Calculate 
-out.pain.q <- multilevel_ate_qp(X, trt, rep(1,n), lambda = 50, lowlim = 0, uplim = 1,  
+out.pain.q <- multilevel_ate_qp(X, trt, rep(1,n), lambda = 1, lowlim = 0, uplim = 1,  
                                 verbose= TRUE, exact_global = TRUE, scale_sample_size = FALSE)
 # Process
 data$ATEwts <- out.pain.q$weights
@@ -114,6 +119,8 @@ ATT.balance <- bal.plots(data, "ATTwts",'pain', covs)
 source("/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/functions/ess-function.R")
 ATE.ess <- ess(data, "pain", "ATEwts")
 ATT.ess <- ess(data, "pain", "ATTwts")
+
+
 
 #4. Create overall Balance Plot 
 #4a. Prepare a data frame with just the balance we need
@@ -139,26 +146,37 @@ levels(ATE.bal.overall$covariate) <- c("Admission Type Surgery", "Age", "Heart F
 #4b. Plot
 plot <- ggplot(data = ATE.bal.overall, aes(x = std.dif, y = covariate, 
                                      shape = factor(contrast) 
-                                     #, color = factor(contrast)
+                                     #, color = factor(contrast) # for color instead of shapes, toggle as needed this,  geom_point, scale_color_manual
                                      )) +
   #geom_point(size = 2, shape = 16) +
   geom_point(size = 2, color = "black")+
   scale_shape_manual(name = "Contrast", values = c(5, 1, 15), 
                      breaks = c('Unweighted', "IPTW","Balancing Weights" )) +
-  #scale_color_manual(name = "Contrast", values = c("darkred", "darkblue", "green")) +
+  #scale_color_manual(name = "Contrast", values = c("darkred", "darkblue", "darkgreen")) +
   xlab("Standardized Difference") + ylab("Covariates") +
-  #ggtitle("Balance Plot") +
+  ggtitle("Balance in Weighted Population") +
   scale_y_discrete(limits = rev(levels(ATE.bal.overall$covariate))) +
   geom_vline(xintercept = 0) +
   geom_vline(xintercept = 0.1) +
   geom_vline(xintercept = -0.1) +
-  theme_bw() 
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5))
   #guides(shape = FALSE)
 
 plot
 
 #5. Create Effective Sample size table
+og.n.tx <- table(data$pain)[[2]]
+og.n.cx<- table(data$pain)[[1]]
+og.n.total <- og.n.cx+og.n.tx
+original.n <-c(og.n.tx, og.n.cx, og.n.total)
 
+ess.tab <- round(rbind(original.n, IPW.ess, ATE.ess))
+rownames(ess.tab) <- c("Unweighted", "IPTW", "Balancing Weights")
+colnames(ess.tab) <- c("Treatment", "Control", "Total")
+ess.tab
+
+write.csv(ess.tab, "/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/results/ess.table.csv", row.names = T)
 
 #6. Estimate ATT
 #6a.Poisson model with IPTWs 
