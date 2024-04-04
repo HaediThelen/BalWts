@@ -1,11 +1,12 @@
 # Balancing Weights Methods Review
-
+# 
 #Libraries
 library(foreign)
 library(balancer)
 library(dplyr)
 library(ggplot2)
 library(sandwich)
+
 
 #1. Load and Prepare Data
 #1a. label the needed variables 
@@ -51,15 +52,21 @@ SMR.ess <- ess(data, "pain", "SMR")
 IPW.ess <- ess(data, "pain", "IPW")
 
 #2e. PS overlap plot
+
+# prepare data for ggplot
 ps.overlap.data <-data %>%
-  select(pain, PS)
+  select(pain, PS) %>%
+  mutate(pain = as.factor(pain))
+
+# label the levels of the pain variable
+levels(ps.overlap.data$pain) <- c("Control", "Treated")
+
 ggplot(ps.overlap.data, aes(x=PS, fill = factor(pain)))+
   geom_density(alpha = 0.5) +
-  scale_fill_manual(values = c("blue", "red"), name = "Treatment") +
+  scale_fill_manual(values = c("blue", "red"), name = "Treatment Group" , ) +
   labs(x = "Propensity Score", y = "Density") +
-  ggtitle("Distribution of Propensity Score by Treatment") +
+  ggtitle("Distribution of Propensity Score by Treatment") + 
   theme_minimal()
-
 
 #3. Estimate Balancing Weights
 #3a. Prepare data for BalanceR
@@ -177,6 +184,8 @@ colnames(ess.tab) <- c("Treatment", "Control", "Total")
 ess.tab
 
 write.csv(ess.tab, "/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/results/ess.table.csv", row.names = T)
+
+
 
 #6. Estimate ATT
 #6a.Poisson model with IPTWs 
