@@ -1,1 +1,0 @@
-results: Sub-directory for collecting publication-ready tables, figures and other material relevant to communicate results.
