@@ -1,5 +1,0 @@
-"0","```r
-library(epiR)
-
-epi.2by2(nsaid_aki)
-```"

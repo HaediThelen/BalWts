@@ -1,7 +1,0 @@
-"0","```r
-aki_tx_ckd <- geeglm(aki~pain*ckd, family = \"poisson\", offset = log(pTime1000), data = nsaid_aki, weights = iptw, id=pid)
-
-summary(aki_tx_ckd)
-
-tbl_regression(aki_tx_ckd, exponentiate = T)
-```"
