@@ -1,0 +1,8 @@
+"0","```r
+library(tableone)
+key_vars <- c( \"age\", \"gfr\", \"chf\", \"ckd\", \"icu\")
+
+table1_undadjusted <- CreateTableOne(vars = key_vars, strata = \"pain\", data = nsaid_aki, test = FALSE)
+## Show table with SMD
+print(table1_undadjusted, smd = TRUE)
+```"

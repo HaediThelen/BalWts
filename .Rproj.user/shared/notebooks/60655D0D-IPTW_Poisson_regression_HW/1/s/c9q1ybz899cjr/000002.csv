@@ -1,0 +1,13 @@
+"0","```r
+library(car)
+nsaid_aki$pain <- as.factor(nsaid_aki$pain)
+
+densityPlot(nsaid_aki$pain1 ~ nsaid_aki$pain,
+            legend = list(title = \"Pain Tx\"),
+            xlab = \"Propensity Score\")
+
+library(ggplot2)
+ggplot(data = nsaid_aki, aes(y = iptw, x = pain1), ) +
+  geom_point(aes(color = pain) )
+
+```"

@@ -1,0 +1,19 @@
+"0","```r
+## Predicted probability of being assigned to pain 1
+nsaid_aki$pain1 <- predict(ps_model, type = \"response\")
+## Predicted probability of being assigned to pain 0
+nsaid_aki$pain0 <- 1 - nsaid_aki$pain1
+
+## Predicted probability of being assigned to the
+## treatment actually assigned (either pain 1 or pain 0)
+nsaid_aki$pAssign <- NA
+nsaid_aki$pAssign[nsaid_aki$pain == 1] <- nsaid_aki$pain1[nsaid_aki$pain == 1]
+nsaid_aki$pAssign[nsaid_aki$pain == 0] <- nsaid_aki$pain0[nsaid_aki$pain == 0]
+
+# Generate weights
+nsaid_aki$iptw <- 1/nsaid_aki$pAssign
+sum(nsaid_aki$iptw)
+mean(nsaid_aki$iptw)
+
+head(nsaid_aki)
+```"

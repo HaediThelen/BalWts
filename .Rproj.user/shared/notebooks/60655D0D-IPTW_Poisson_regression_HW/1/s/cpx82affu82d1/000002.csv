@@ -1,0 +1,8 @@
+"0","```r
+
+library(survey)
+surv_adjusted <- svydesign(ids = ~ pid, strata = ~ pain, weights = ~iptw, nest = T, data = nsaid_aki)
+
+table1_adjusted <- svyCreateTableOne(vars = key_vars, strata = \"pain\", data = surv_adjusted)
+print(table1_adjusted, smd = TRUE)
+```"

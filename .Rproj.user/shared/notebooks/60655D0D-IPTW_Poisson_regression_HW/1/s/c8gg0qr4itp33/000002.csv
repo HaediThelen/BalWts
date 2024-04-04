@@ -1,0 +1,14 @@
+"0","```r
+
+
+ps_model_check <- glm(pain ~ admType + as.factor(sex) + age + chf + cpd + pvd + cva + mif + htn + arry + obese + ckd + afib + priorLos + diuretic + vancomycin + wbc + sodium + hemoglobin + platelets + abx + icu + bmi + race + gfr + dmII + cancer, family = binomial(link = \"logit\"), data = nsaid_aki)
+
+summary(ps_model_check) #same as if we don't put as factor. 
+class(nsaid_aki$sex)
+
+nsaid_aki_check <- nsaid_aki %>%
+  mutate(sex2=as.numeric(sex))
+
+ps_model_check <- glm(pain ~ admType + sex2 + age + chf + cpd + pvd + cva + mif + htn + arry + obese + ckd + afib + priorLos + diuretic + vancomycin + wbc + sodium + hemoglobin + platelets + abx + icu + bmi + race + gfr + dmII + cancer, family = binomial(link = \"logit\"), data = nsaid_aki_check)
+summary(ps_model_check )
+```"

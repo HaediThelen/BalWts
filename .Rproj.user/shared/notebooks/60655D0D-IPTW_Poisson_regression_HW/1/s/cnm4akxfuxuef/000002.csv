@@ -1,0 +1,8 @@
+"0","```r
+all_vars <- c(\"admType\", \"sex\", \"age\", \"chf\", \"cpd\", \"pvd\", \"cva\", \"mif\", \"htn\", \"arry\", \"obese\",	\"ckd\", \"afib\", \"priorLos\", \"diuretic\", \"vancomycin\", \"wbc\", \"sodium\", \"hemoglobin\", \"platelets\", \"abx\", \"icu\", \"bmi\", \"race\", \"gfr\", \"dmII\", \"cancer\")
+
+ps_model <- glm(pain ~ . -pid -aki -pTime1000, family = \"binomial\"(link = \"logit\"), data = nsaid_aki) #predict pain with everything but pid and aki
+
+summary(ps_model)
+
+```"

@@ -1,0 +1,6 @@
+"0","```r
+# use glm 
+adj_m1 <- glm(aki~pain, offset = log(pTime1000), family = \"poisson\", data = nsaid_aki, weights = iptw)
+summary(adj_m1)
+tbl_regression(adj_m1, exponentiate = TRUE)
+```"

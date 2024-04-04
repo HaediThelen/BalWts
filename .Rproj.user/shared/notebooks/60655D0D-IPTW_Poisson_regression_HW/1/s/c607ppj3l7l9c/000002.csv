@@ -1,0 +1,4 @@
+"0","```r
+unadj_m1 <- glm(aki~pain, offset = log(pTime1000), family = \"poisson\", data = nsaid_aki)
+summary(unadj_m1)
+```"

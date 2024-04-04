@@ -1,0 +1,250 @@
+library(foreign)
+library(balancer)
+library(dplyr)
+library(geepack)
+
+rm(list=ls())
+
+data2 <- read.dta("/Users/haedi/Library/CloudStorage/Dropbox/BMI/Example Code/IPW/rhc_clean.dta")
+
+head(data)
+table(data$treat)
+                              
+#####################################################
+# Estimating IP weights
+#####################################################
+
+# Covariates For Adjustment
+vars <- c("resp", "card", "neuro", "gastr", "renal", "meta", "hema", "seps", "trauma", 
+			   "ortho", "adld3pc", "das2d3pc", "dnr1", "surv2md1", "aps1", "scoma1", "wtkilo1",
+			   "temp1", "meanbp1", "resp1", "hrt1", "pafi1", "paco21", "ph1", "wblc1", "hema1",
+			   "sod1", "pot1", "crea1", "bili1", "alb1", "cardiohx", "chfhx", "dementhx",
+			   "psychhx", "chrpulhx", "renalhx", "liverhx", "gibledhx", "malighx", "immunhx",
+			   "transhx", "amihx", "age", "edu", "ur_int", "race_cat1", "race_cat2",
+			   "ins_cat1",  "ins_cat2",  "ins_cat3",  "ins_cat4",  "ins_cat5", 
+			   "cat1_dum1", "cat1_dum2", "cat1_dum3", "cat1_dum4", "cat1_dum5",
+               "cat1_dum6", "cat1_dum7", "cat1_dum8", "canc_cat1", "canc_cat2",
+               "inc_cat1", "inc_cat2", "inc_cat3",
+               "cat2_dum1", "cat2_dum2", "cat2_dum3", "cat2_dum4", "cat2_dum5",
+               "cat2_dum6")
+               
+               
+X <- scale(data[,vars])
+trt <- data$treat
+n <- nrow(data)
+Z <- data$hospid
+ 
+ # timing
+t_fexact <- system.time({                
+out.rhc <- multilevel_qp(X, trt, rep(1,n), lambda = .5, verbose= TRUE, exact_global = FALSE, scale_sample_size = FALSE)
+})
+
+# time required for computation, in minutes
+t_fexact[['elapsed']]/60
+
+t_fexact <- system.time({                
+out.rhc.ate <- multilevel_ate_qp(X, trt, rep(1,n), lambda = ,5, verbose= TRUE, exact_global = FALSE, scale_sample_size = FALSE)
+})
+
+# time required for computation, in minutes
+t_fexact[['elapsed']]/60
+
+
+# Process the Weights
+data$wts <- pmax(out.rhc$weights, 0)
+data$wts[data$treat == 1] <- 1
+
+## Standardized
+wt.data <- data %>% filter(treat==0) %>% select(wts)
+wt.data <- wt.data %>% filter(wts > 0) 
+
+## % With Very Small Weights
+mean(wt.data$wts < .00001)*100
+
+table(data2$treat)
+
+wt.data$std.wts <- wt.data$wts/2184
+
+wt.data <- wt.data %>% filter(std.wts > 0) 
+library(ggplot2)
+
+h4 <- ggplot(wt.data, aes(std.wts)) +
+   geom_histogram( bins = 50, color="black", fill="lightblue") + theme_bw() +
+    ylab("Number of Occurences") +
+    scale_x_continuous("Percent of total weight on control unit")
+h4
+
+data$ate.wts <- out.rhc.ate$weights
+summary(data$ate.wts)
+
+sum((data$wts > 10))
+
+# ESS
+nrow(data)
+ess <- (sum(data$wts)^2) / (sum(data$wts^2)) 
+ess
+
+ess <- (sum(data$ate.wts)^2) / (sum(data$ate.wts^2)) 
+ess
+
+data.var <- data %>% group_by(treat) %>% 
+   summarize(across(vars, ~var(.x))) %>% as.data.frame()
+
+c.var <- as.numeric(data.var[1,])
+t.var <- as.numeric(data.var[2,])
+c.var <- c.var[-1]
+t.var <- t.var[-1]
+pooled.var <- sqrt((t.var + c.var/2))
+
+
+um.wt <- data %>% group_by(treat) %>% 
+   summarize(across(vars, ~mean(.x))) %>% as.data.frame()
+
+bal.st <- data %>% group_by(treat) %>% 
+   summarize(across(vars, ~ weighted.mean(.x, wts))) %>% as.data.frame()
+
+bal.ate <- data %>% group_by(treat) %>% 
+   summarize(across(vars, ~ weighted.mean(.x, ate.wts))) %>% as.data.frame()
+   
+                  
+um.wt.tab <- matrix(NA, length(vars), 3)
+um.wt.tab[,1] <- unlist(um.wt[1,-1]) 
+um.wt.tab[,2] <- unlist(um.wt[2,-1])                        
+um.wt.tab[,3] <- (unlist(um.wt[2,-1]) - unlist(um.wt[1,-1]))/pooled.var
+
+bal.st.tab <- matrix(NA, length(vars), 3)
+bal.st.tab[,1] <- unlist(bal.st[1,-1]) 
+bal.st.tab[,2] <- unlist(bal.st[2,-1])                        
+bal.st.tab[,3] <- (unlist(bal.st[2,-1]) - unlist(bal.st[1,-1]))/pooled.var    
+
+bal.ate.tab <- matrix(NA, length(vars), 3)
+bal.ate.tab[,1] <- unlist(bal.ate[1,-1]) 
+bal.ate.tab[,2] <- unlist(bal.ate[2,-1])                        
+bal.ate.tab[,3] <- (unlist(bal.ate[2,-1]) - unlist(bal.ate[1,-1]))/pooled.var 
+
+
+### Tables
+rownames(um.wt.tab) <- vars
+colnames(um.wt.tab) <- c("RHC", "Contrl", "Std. Diff.")
+
+rownames(bal.st.tab) <- vars
+colnames(bal.st.tab) <- c("RHC", "Contrl", "Std. Diff.")
+round(bal.st.tab, 3)
+
+rownames(bal.ate.tab) <- vars
+colnames(bal.ate.tab) <- c("RHC", "Contrl", "Std. Diff.")
+round(bal.ate.tab, 3)
+
+tab.1 <- um.wt.tab[which(abs(um.wt.tab[,3]) > .2),]
+round(tab.1, 3)
+
+tab.2 <- bal.st.tab[which(abs(bal.st.tab[,3]) > .2),]
+round(tab.2, 3)
+
+tab.3 <- bal.ate.tab[which(abs(bal.ate.tab[,3]) > .2),]
+round(tab.3, 3)
+
+# Plots 
+n_covs <- length(vars)             			  
+data.plot <- c(bal.st.tab[,3], um.wt.tab[,3])
+data.plot <- as.data.frame(data.plot)
+names(data.plot) <- "std.dif"
+data.plot$contrast <- c(rep(1, n_covs), rep(2, n_covs))
+data.plot$contrast <- factor(data.plot$contrast, levels = c(1,2), labels = c("Weighted", "Unweighted"))
+data.plot$covariate <- as.factor(vars)
+
+library(ggplot2)
+
+#setwd("/Users/ljk20/Dropbox/Stat Adj Essay/draft/figures")
+#pdf("balance-plot.pdf", width=7, height=7, onefile=FALSE, paper="special")		
+ggplot(data=data.plot, aes(x=std.dif, y=covariate, shape=factor(contrast)))  + 
+          geom_point(size=1.75) + 
+          scale_shape_manual(name= "Contrast", values=c(1,15)) + 
+          xlab("Standardized Difference") + ylab("Covariates") +
+          scale_y_discrete(limits = rev(levels(data.plot$covariate))) +
+          geom_vline(xintercept= 0) +
+          geom_vline(xintercept= 0.1) +
+          geom_vline(xintercept= -0.1) +
+          theme_bw()
+#dev.off()
+
+
+library(sandwich)
+msm.out <- function(obj){
+	SE <- sqrt(diag(vcovHC(obj, type="HC0")))[2] # robust standard errors
+    beta <- coef(obj)[2]
+    lcl <- (beta - abs(qnorm(.025))*SE)
+    ucl <- (beta + abs(qnorm(.025))*SE)
+    return(c(beta, lcl, ucl))
+   }
+
+# Risks
+died <- lm(dead ~ treat, data=data, weights = wts)
+died.out <- msm.out(died)
+died.out
+
+died <- lm(dead ~ treat, data=data, weights = ate.wts)
+died.out <- msm.out(died)
+died.out
+
+
+adjust.vars <-c("treat","resp", "card", "neuro", "gastr", "renal", "meta", "hema", "seps", "trauma", 
+			   "ortho", "adld3pc", "das2d3pc", "dnr1", "surv2md1", "aps1", "scoma1", "wtkilo1",
+			   "temp1", "meanbp1", "resp1", "hrt1", "pafi1", "paco21", "ph1", "wblc1", "hema1",
+			   "sod1", "pot1", "crea1", "bili1", "alb1", "cardiohx", "chfhx", "dementhx",
+			   "psychhx", "chrpulhx", "renalhx", "liverhx", "gibledhx", "malighx", "immunhx",
+			   "transhx", "amihx", "age", "edu", "ur_int", "race_cat1", "race_cat2",
+			   "ins_cat1",  "ins_cat2",  "ins_cat3",  "ins_cat4", 
+			   "cat1_dum1", "cat1_dum2", "cat1_dum3", "cat1_dum4", "cat1_dum5",
+               "cat1_dum6", "cat1_dum7", "canc_cat1", "canc_cat2",
+               "inc_cat1", "inc_cat2",
+               "cat2_dum1", "cat2_dum2", "cat2_dum3", "cat2_dum4", "cat2_dum5")
+
+died.full <- lm(reformulate(adjust.vars, response="dead"), data=data, weights = wts)
+died.out <- msm.out(died.full)
+died.out
+
+## Risk Ratio Example
+msm.out <- function(obj){
+	SE <- coef(summary(obj))[2,2] # robust standard errors
+    beta <- coef(obj)[2]
+    lcl <- (beta - abs(qnorm(.025))*SE)
+    ucl <- (beta + abs(qnorm(.025))*SE)
+    return(c(beta, lcl, ucl))
+   }
+   
+died.or <- geeglm(dead ~ treat, data = data, std.err = 'san.se', 
+					  weights = wts, id=1:nrow(data),
+					  corstr="independence", family=binomial)
+died.or.out <- exp(msm.out(died.or))
+died.or.out
+
+died.rr <- geeglm(dead ~ treat, data = data, std.err = 'san.se', 
+					  weights = wts, id=1:nrow(data),
+					  corstr="independence", family=poisson)
+died.rr.out <- exp(msm.out(died.rr))
+died.rr.out
+
+
+rr.probs <- data %>% group_by(treat) %>% 
+   summarize(across(c("dead" ),  ~ weighted.mean(.x, wts))) %>% as.data.frame()
+
+mu0 <- rr.probs[1,2]
+mu1 <- rr.probs[2,2]
+rr <- mu1/mu0
+
+se1 <- sqrt(var(data$dead[data$treat == 1]) / sum(data$treat == 1))
+se2 <- sqrt(sum((data$dead[data$treat == 0] - mu0)^2 * data$wts[data$treat == 0]^2) / sum(data$wts[data$treat == 0])^2)
+se_log_risk_ratio = sqrt(se1^2 / mu1^2 + se2^2 / mu0^2)
+rr
+rr + 1.96*se_log_risk_ratio
+rr - 1.96*se_log_risk_ratio
+
+c(rr, rr + 1.96*se_log_risk_ratio, rr - 1.96*se_log_risk_ratio)
+
+logRR <- log(mu1) - log(mu0)
+exp(logRR)
+rr
+
+
+

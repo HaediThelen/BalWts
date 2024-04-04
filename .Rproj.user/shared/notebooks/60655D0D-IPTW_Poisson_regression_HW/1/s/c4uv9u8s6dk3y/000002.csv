@@ -1,0 +1,4 @@
+"0","```r
+exp(adj_m1$coefficients[2])
+
+```"

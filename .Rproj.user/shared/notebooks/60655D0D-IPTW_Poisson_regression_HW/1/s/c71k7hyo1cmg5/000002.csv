@@ -1,0 +1,9 @@
+"0","```r
+library(dplyr)
+library(haven)
+library(gtsummary)
+# load in the file
+ nsaid_aki <- read_dta(\"/Users/haedi/Library/CloudStorage/Box-Box/EPID 6660/r_code/nsaid_aki.dta\")
+head(nsaid_aki)
+length(nsaid_aki$pid)
+```"
