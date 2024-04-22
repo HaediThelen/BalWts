@@ -50,9 +50,10 @@ SMR.balance <- bal.plots(data, "SMR", 'pain', covs)
 source("/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/functions/ess-function.R")
 SMR.ess <- ess(data, "pain", "SMR")
 IPW.ess <- ess(data, "pain", "IPW")
+summary(data$IPW)
+sd(data$IPW)
 
 #2e. PS overlap plot
-
 # prepare data for ggplot
 ps.overlap.data <-data %>%
   select(pain, PS) %>%
@@ -127,8 +128,6 @@ source("/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/functions/ess-fun
 ATE.ess <- ess(data, "pain", "ATEwts")
 ATT.ess <- ess(data, "pain", "ATTwts")
 
-
-
 #4. Create overall Balance Plot 
 #4a. Prepare a data frame with just the balance we need
 # Relabel IPW weights, and extract
@@ -184,11 +183,4 @@ colnames(ess.tab) <- c("Treatment", "Control", "Total")
 ess.tab
 
 write.csv(ess.tab, "/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/results/ess.table.csv", row.names = T)
-
-
-
-#6. Estimate ATT
-#6a.Poisson model with IPTWs 
-
-#6b.Poisson model with Balancing weights for each value of lambda  
 
