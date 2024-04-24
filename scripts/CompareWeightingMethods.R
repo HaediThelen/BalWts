@@ -84,6 +84,7 @@ X <- scale(model.matrix(as.formula(basis), data)) # prepare a scaled matrix
 trt <- data$pain
 n <- nrow(data)
 
+# estimate hyperparameter
 data.ctrl <- data %>% filter(pain==0)
 lambda.reg <- lm(reformulate(covs, response = "kEver"), data=data.ctrl)
 var(lambda.reg$resid)
