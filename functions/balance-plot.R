@@ -79,7 +79,7 @@ bal.plots <- function(df, weights, treatment, covs){
     print(1)#
 
 
-  return(list(plot = plot, data = data.plot))
+  return(list(plot = plot, data = data.plot, pbr = pbr))
 }
 
 
