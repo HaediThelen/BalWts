@@ -1,4 +1,5 @@
 # Prepare data for Balance Weights Project
+library(haven)
 
 # Start with Todd's Full ibuprofen + oxycodone AKI dataset, clean and lable here, 
 # store that data, then use that in the analysis
@@ -7,6 +8,7 @@
 data <- read_dta("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/nsaid_aki.dta") 
 
 #  prepare data
+set.seed(1234)
 data <- data %>% 
   filter(pain !=2) %>% # drop patients exposed to both IBU and Opioids
   mutate(across(where(is.numeric), as.numeric)) %>%
@@ -32,7 +34,10 @@ data <- data %>%
          cancer.metastatic = if_else(cancer == 2, 1, 0)) %>%
   mutate(sup.no = if_else(sup == 0, 1, 0),
          sup.h2ra= if_else(sup == 1, 1, 0),
-         sup.ppi = if_else(sup == 2, 1, 0))
+         sup.ppi = if_else(sup == 2, 1, 0)) %>%
+  # take a random sample of 10% of the rows
+  sample_frac(0.10)
+
 
 write.csv(data, "/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/IbuAkiClean.csv", row.names = F)
 data.clean <- read.csv("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/IbuAkiClean.csv")
