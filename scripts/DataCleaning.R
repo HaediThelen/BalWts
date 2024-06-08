@@ -35,9 +35,14 @@ data <- data %>%
   mutate(sup.no = if_else(sup == 0, 1, 0),
          sup.h2ra= if_else(sup == 1, 1, 0),
          sup.ppi = if_else(sup == 2, 1, 0)) %>%
-  # take a random sample of 10% of the rows
-  sample_frac(0.10)
+  select("pain", "age", "sex", "admType", "presentation.ed", "presentation.icu",
+"presentation.or", "presentation.floor", "presentation.other", 
+"priorLos", "icuCurrent", "chf",  "dm.no", "dm.noncomp", "dm.comp", 
+"ckd", "indexGFR", "loopBase", "vancoBase", "pTime1000", "kEver") #%>%
+  # take a random sample of 50% of the rows
+  #sample_frac(0.5)
 
 
 write.csv(data, "/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/IbuAkiClean.csv", row.names = F)
 data.clean <- read.csv("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/IbuAkiClean.csv")
+

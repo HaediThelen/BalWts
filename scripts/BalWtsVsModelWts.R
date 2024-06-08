@@ -62,6 +62,7 @@ MW.balance <- bal.plots(data, "MW", 'pain', covs)
 MW.ess <- ess(data, "pain", "MW")
 summary(data$MW)
 sd(data$MW)
+sum(data$PS < 0.05)/nrow(data) # proportion of PS < 0.05
 
 #2e. PS overlap plot
 # prepare data for ggplot
@@ -94,7 +95,7 @@ lambda.reg <- lm(reformulate(covs_int, response = "kEver"), data=data.ctrl)
 var(lambda.reg$resid) # initial hyperparameter = 0.05
 
 #3b. Estimate Balancing weights for multiple lambdas
-lambdas <- c(0,  0.01, 0.05, 0.5, 1, 5, 10, 50)
+lambdas <- c(0,0.0001, 0.01, 0.05, 0.5, 1, 5, 10, 50)
 
 # For loop that estimates balance for different values of lambda
 for (i in 1:length(lambdas)){
@@ -217,4 +218,5 @@ results <- results %>% arrange(row.names(results) != "PBR")
 results 
 
 write.csv(results, "/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/results/pbr.ess.tab.csv", row.names = T)
+
 
