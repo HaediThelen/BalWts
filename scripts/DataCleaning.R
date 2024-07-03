@@ -5,7 +5,7 @@ library(haven)
 # store that data, then use that in the analysis
 
 #Loa in data
-data <- read_dta("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/nsaid_aki.dta") 
+#data <- read_dta("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/nsaid_aki.dta") 
 
 #  prepare data
 set.seed(1234)
@@ -45,4 +45,24 @@ data <- data %>%
 
 write.csv(data, "/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/IbuAkiClean.csv", row.names = F)
 data.clean <- read.csv("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/IbuAkiClean.csv")
+
+####################################################################################
+# Dataset 2
+data <- read_dta("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/nsaid_ras_dataset.dta") 
+
+#  prepare data
+data <- data %>% 
+  mutate(across(where(is.numeric), as.numeric)) %>%
+  mutate(across(where(~ all(. %in% c(0, 1))), as.integer)) %>%
+  mutate(dm.no = if_else(dm == 0, 1, 0),
+       dm.noncomp = if_else(dm == 1, 1, 0),
+       dm.comp = if_else(dm == 2, 1, 0)) %>%
+  select("pain", "age", "sex", "admType", 
+         "priorLos", "icuCurrent", "chf",  "dm.no", "dm.noncomp", "dm.comp", 
+         "ckd", "indexGFR", "loopBase", "vancoBase")
+
+
+
+write.csv(data, "/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/NSAID_RASClean.csv", row.names = F)
+data.clean <- read.csv("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/NSAID_RASClean.csv")
 
