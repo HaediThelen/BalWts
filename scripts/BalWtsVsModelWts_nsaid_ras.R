@@ -59,17 +59,14 @@ data <- data %>%
   mutate(MW = ifelse(nsaid_bp ==1, 1/PS, 1/(1-PS)))
 
 #2c. Evaluate balance
-MW.balance <- bal.plots(data, "MW", 'nsaid_bp', covs) #try contrasts other than pain.. 
+MW.balance <- bal.plots(data, "MW", 'nsaid_bp', covs) 
 
 #2d. Calculate effective sample size (ESS)
 MW.ess <- ess(data, "nsaid_bp", "MW")
 summary(data$MW)
 sd(data$MW)
-sum(data$PS < 0.1)/nrow(data) # proportion of PS < 0.05
-sum(data$PS > (1-0.1))/nrow(data) # proportion of PS > 0.95
-# calculate proporiton of nsaid_bp = 1 with PS < 0.1
-sum(data$nsaid_bp == 1 & data$PS < 0.1)/sum(data$nsaid_bp == 1)
-sum(data$nsaid_bp == 0 & data$PS > 0.95)/sum(data$nsaid_bp == 0)
+sum(data$nsaid_bp == 1 & data$PS < 0.1)/sum(data$nsaid_bp == 1) # proportion of treated PS < 0.1
+sum(data$nsaid_bp == 0 & data$PS > 0.95)/sum(data$nsaid_bp == 0) # proportion of control PS > 0.9
 
 
 #2e. PS overlap plot
