@@ -6,7 +6,9 @@
 ###    This is the code for the companion paper "A primer on                  ### 
 ###    using balancing weights to estimate inverse probability weights"       ### 
 ###    We use a dataset extracted from an EHR that is described in:           ###
-###    DOI: 10.34067/KID.0001432020                                           ###
+###    DOI: 10.34067/KID.0001432020.                                          ###
+###    The dataset is available at: 10.5281/zenodo.13839796                   ###
+###    
 ###    This dataset contains several covariates and we can visualize          ###
 ###    the difference between not using weights, model-based weights          ###
 ###    and balancing weights.                                                 ###
@@ -30,7 +32,7 @@ source("./functions/ess-function.R")
 
 #################################################################################
 #1. Load and Prepare Data
-# Download data from  ############## Zenodo Posting TBD ##############
+# Download data available from Zenodo DOI: 10.5281/zenodo.13839796
 data <- read.csv("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/NSAID_RASClean.csv")  #Path to data
 # Treatment variable: nsaid_bp, 1= treated (RASi), 0= control (CCB)
 
