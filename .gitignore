@@ -15,3 +15,9 @@ temp/
 .RData
 .Ruserdata
 Balwts.Rproj
+
+# Private files
+PlotForTweetorial.R
+DataCleaningNsaidRas.R
+DataCleaning.R
+BalWtsVsModelWts.R
