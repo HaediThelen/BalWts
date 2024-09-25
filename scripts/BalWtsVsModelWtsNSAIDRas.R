@@ -97,10 +97,10 @@ n <- nrow(data)
 # estimate data-driven, initial hyperparameter
 data.ctrl <- data %>% filter(nsaid_bp==0)
 lambda.reg <- lm(reformulate(covs_int, response = "kEver"), data=data.ctrl)
-var(lambda.reg$resid) # initial hyperparameter = 0.05
+var(lambda.reg$resid) # initial hyperparameter = 0.066, =.07
 
 #3b. Estimate Balancing weights for multiple lambdas
-lambdas <- c(0,0.0001, 0.01, 0.05, 0.5, 1, 5, 10, 50)
+lambdas <- c(0,0.0001, 0.01, 0.05, 0.07, 0.5, 1, 5, 10, 50)
 
 # For loop that estimates balance for different values of lambda
 for (i in 1:length(lambdas)){
@@ -111,8 +111,8 @@ for (i in 1:length(lambdas)){
 }
 
 # Evaluate base case weights
-summary(data$BW0.05)
-sd(data$BW0.05)
+summary(data$BW0.07)
+sd(data$BW0.07)
 
 #3c. Evaluate Balance
 # View SMD plots and calculate percent bias reduction (PBR) for each value of lambda save to list PBRs
@@ -128,8 +128,8 @@ PBRs <- as.data.frame(PBRs)
 colnames(PBRs) <- paste0("BW", lambdas)
 PBRs
 
-# Save the base case lambda for the balance plot
-BW.balance <- bal.plots(data, "BW0.05", 'nsaid_bp', covs)
+# Save the base case lambda for the balance plot lambda = 0.07
+BW.balance <- bal.plots(data, "BW0.07", 'nsaid_bp', covs)
 
 #3d. Calculate effective sample size for each value of lambda 
 BW.ess <- data.frame(matrix(NA, nrow = 3, ncol = length(lambdas)))
@@ -144,7 +144,7 @@ for (i in 1:length(lambdas)){
 BW.ess
 
 #################################################################################
-#4. Create overall Balance Plot using lambda = 0.05
+#4. Create overall Balance Plot using lambda = 0.07
 #4a. Prepare a data frame combining unweighted, model-based, and balancing weights
 
 # Relabel MW weights, and extract
@@ -215,12 +215,12 @@ order <- c(
   
   # Medications
   "Alpha Beta Blocker", "Beta Blocker", "Broad-spectram Antibiotic", 
-  "Diuretic", "Loop Diuretic", "Narrow-spectrum Antibiotic", 
+  "Other Diuretic", "Loop Diuretic", "Narrow-spectrum Antibiotic", 
   "Nephrotoxic Antibiotic", "Other Hypertension Med", "Other Nephrotoxin", 
   "Vancomycin",
   
   # Labs
-  "Index GFR"
+  "Baseline eGFR"
 )
 BW.bal.overall$covariate <- factor(BW.bal.overall$covariate, levels = order)
 
@@ -243,6 +243,9 @@ plot <- ggplot(data = BW.bal.overall, aes(x = std.dif, y = covariate,
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
 print(plot)
+
+ggsave("./results/Fig1.png", 
+       plot, width = 7, height = 8, units = "in", dpi = 600)
  
  #################################################################################
 #5. Create effective sample size table
@@ -275,6 +278,6 @@ results <- rbind(ess.tab, PBRs2)
 results <- results %>% arrange(row.names(results) != "PBR")
 results 
 
-write.csv(results, "/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/results/pbr.ess.tab.csv", row.names = T)
+write.csv(results, "./results/pbr.ess.tab.csv", row.names = T)
 
 
