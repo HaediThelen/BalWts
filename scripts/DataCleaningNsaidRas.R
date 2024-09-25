@@ -43,7 +43,7 @@ data <- data %>%
          race.2 = if_else(race2 == 2, 1, 0)) %>%
   filter(ddiGroup %in% c(1, 2)) %>% # filter to patients with NSAID and either RASi or CCB
   mutate(nsaid_bp = if_else(ddiGroup == 1, 1, 0)) %>% #nsaid_bp, =1 if ddiGroup = 3 and 0 if ddiGroup = 4
-  select('pain',"bp", "ddiGroup","nsaid_bp", "preAkiStatus", "admType", "sex", "age", "chf", 
+  select('kEver', 'pain',"bp", "ddiGroup","nsaid_bp", "preAkiStatus", "admType", "sex", "age", "chf", 
          "metsol", "cpd", "hiv", "liver", "nonMet", "pvd", "cva", "mif", "valve", 
          "htn", "arry", "pCirc", "obese", "wtLoss", "fluid", "ckd", "afib", "osa", 
          "priorLos", "loopBase", "vancoBase", "wbcBase", "labnaBase", "hgbBase", 
