@@ -34,7 +34,7 @@ source("./functions/ess-function.R")
 #1. Load and Prepare Data
 # Download data available from Zenodo DOI: 10.5281/zenodo.13839796
 data <- read.csv("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/NSAID_RASClean.csv")  #Path to data
-# Treatment variable: nsaid_bp, 1= treated (RASi), 0= control (CCB)
+# Treatment variable: nsaid_bp, 1= treated (RASi), 0= control (CCB): patients who received an NSAID and either RASi or CCB
 
 # List of covariates
 covs <- c("admType", "sex", "age", "chf", 
@@ -96,7 +96,7 @@ X <- scale(model.matrix(as.formula(basis), data)) # prepare a scaled matrix
 trt <- data$nsaid_bp
 n <- nrow(data)
 
-# estimate data-driven, initial hyperparameter
+# estimate data-driven, initial hyperparameter using outcome variable kEVER (occurrence of AKI)
 data.ctrl <- data %>% filter(nsaid_bp==0)
 lambda.reg <- lm(reformulate(covs_int, response = "kEver"), data=data.ctrl)
 var(lambda.reg$resid) # initial hyperparameter = 0.066, =.07
