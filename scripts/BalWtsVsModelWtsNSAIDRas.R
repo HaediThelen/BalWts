@@ -7,8 +7,8 @@
 ###    using balancing weights to estimate inverse probability weights"       ### 
 ###    We use a dataset extracted from an EHR that is described in:           ###
 ###    DOI: 10.34067/KID.0001432020.                                          ###
-###    The dataset is available at: 10.5281/zenodo.13839796                   ###
-###    
+###    The dataset is available in the associated git repo.                   ###
+###                                                                           ### 
 ###    This dataset contains several covariates and we can visualize          ###
 ###    the difference between not using weights, model-based weights          ###
 ###    and balancing weights.                                                 ###
@@ -26,14 +26,13 @@ if (!require("devtools")) install.packages("devtools"); library(devtools)
 if (!require("balancer")) devtools::install_github("ebenmichael/balancer")
 
 # Load functions
-setwd("/Users/haedi/Library/CloudStorage/Box-Box/Repos/Balwts/") #Path to repo
+#setwd("") 
 source("./functions/balance-plot.R") 
 source("./functions/ess-function.R")
 
 #################################################################################
 #1. Load and Prepare Data
-# Download data available from Zenodo DOI: 10.5281/zenodo.13839796
-data <- read.csv("/Users/haedi/Library/CloudStorage/Box-Box/Data/BalWts/NSAID_RASClean.csv")  #Path to data
+data <- read.csv("NsaidRasiData.csv")  
 # Treatment variable: nsaid_bp, 1= treated (RASi), 0= control (CCB): patients who received an NSAID and either RASi or CCB
 
 # List of covariates
@@ -240,15 +239,14 @@ plot <- ggplot(data = BW.bal.overall, aes(x = std.dif, y = covariate,
                      name = NULL,
                      breaks = c('Unweighted', "Model-Based Weights", "Balancing Weights")) +
   xlab("Standardized Difference") + ylab("Covariates") + 
-  #ggtitle("Balance in Weighted Population") + 
+  ggtitle("Balance in Weighted Population") + 
   scale_y_discrete(limits = rev(levels(BW.bal.overall$covariate))) +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
 print(plot)
 
 #save as pdf
-ggsave("./results/Fig1.pdf", 
-       plot, width = 6, height = 7, units = "in")
+#ggsave("./results/Fig1.pdf", plot, width = 6, height = 7, units = "in")
  
  #################################################################################
 #5. Create effective sample size table
@@ -281,6 +279,4 @@ results <- rbind(ess.tab, PBRs2)
 results <- results %>% arrange(row.names(results) != "PBR")
 results 
 
-write.csv(results, "./results/pbr.ess.tab.csv", row.names = T)
-
-
+#write.csv(results, "./results/pbr.ess.tab.csv", row.names = T)
