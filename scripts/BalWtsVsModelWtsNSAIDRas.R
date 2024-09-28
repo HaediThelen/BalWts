@@ -234,20 +234,21 @@ plot <- ggplot(data = BW.bal.overall, aes(x = std.dif, y = covariate,
   geom_vline(xintercept = c(-0.1, 0, 0.1)) +
   geom_point(size = 2) +
   scale_color_manual(values = c("#FC4E07","#00AFBB", "#E7B800"),
-                     name = "Contrast", 
+                     name = NULL, 
                      breaks = c('Unweighted', "Model-Based Weights", "Balancing Weights")) +
   scale_shape_manual(values = c(16, 17, 15),  # Circle, Triangle, Square
-                     name = "Contrast",
+                     name = NULL,
                      breaks = c('Unweighted', "Model-Based Weights", "Balancing Weights")) +
   xlab("Standardized Difference") + ylab("Covariates") + 
-  ggtitle("Balance in Weighted Population") + 
+  #ggtitle("Balance in Weighted Population") + 
   scale_y_discrete(limits = rev(levels(BW.bal.overall$covariate))) +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
 print(plot)
 
-ggsave("./results/Fig1.png", 
-       plot, width = 7, height = 8, units = "in", dpi = 600)
+#save as pdf
+ggsave("./results/Fig1.pdf", 
+       plot, width = 6, height = 7, units = "in")
  
  #################################################################################
 #5. Create effective sample size table
